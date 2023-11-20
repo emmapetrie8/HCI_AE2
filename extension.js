@@ -34,7 +34,7 @@ function getWebviewContent() {
 		<style>  
 			body {
 				display: grid;
-				grid-template-columns: repeat(3, 1fr); /* 3 columns with equal width */
+				grid-template-columns: repeat(2, 1fr); /* 3 columns with equal width */
 				gap: 20px; /* Gap between grid items */
 				padding: 20px;
 			}
@@ -44,7 +44,7 @@ function getWebviewContent() {
 				padding: 10px;
 				text-align: center;
 				width: 90%;
-				height: 100px;
+				height: 200px;
 			}
 
 			.dashboard-title {
@@ -57,19 +57,36 @@ function getWebviewContent() {
 				display: transparent;
 			}
 
+			.pie-container {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100%;
+			}
+
+			.pie {
+				width: 100px;
+				height: 100px;
+				background-image: conic-gradient(#96577f 40%, #73d9cf 40%, #73d9cf 100%);
+				border-radius: 50%;
+			}
 
 		</style>
 	</head>
 	<body>
 		<h1 class="dashboard-title">Dashboard stats plugin</h1>
 		<div class="grid-item-hide"></div>
-		<div class="grid-item-hide"></div>
-		<div class="grid-item">Item 3</div>
-		<div class="grid-item">Item 4</div>
-		<div class="grid-item">Item 5</div>
-		<div class="grid-item">Item 6</div>
-		<div class="grid-item">Item 6</div>
-		<div class="grid-item">Item 6</div>
+		<div class="grid-item">
+			Test coverage visualisation
+			<div class="pie-container">
+				<div class="pie"></div>
+			</div>
+		</div>
+		<div class="grid-item">Error navigator</div>
+		<div class="grid-item">Dependencies graph</div>
+		<div class="grid-item">Code smell detector</div>
+		<div class="grid-item">To-do list</div>
+		<div class="grid-item">Customisation</div>
 	</body>
     </html>
     `;
