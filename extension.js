@@ -1,47 +1,11 @@
-// // The module 'vscode' contains the VS Code extensibility API
-// // Import the module and reference it with the alias vscode in your code below
-// const vscode = require('vscode');
-
-// // This method is called when your extension is activated
-// // Your extension is activated the very first time the command is executed
-
-// /**
-//  * @param {vscode.ExtensionContext} context
-//  */
-// function activate(context) {
-
-// 	// Use the console to output diagnostic information (console.log) and errors (console.error)
-// 	// This line of code will only be executed once when your extension is activated
-// 	console.log('Congratulations, your extension "dashboard-stats" is now active!');
-
-// 	// The command has been defined in the package.json file
-// 	// Now provide the implementation of the command with  registerCommand
-// 	// The commandId parameter must match the command field in package.json
-// 	let disposable = vscode.commands.registerCommand('dashboard-stats.launchDashboard', function () {
-// 		// The code you place here will be executed every time your command is executed
-
-// 		// Display a message box to the user
-// 		vscode.window.showInformationMessage('Hello World from Dashboard stats!');
-// 	});
-
-// 	context.subscriptions.push(disposable);
-// }
-
-// // This method is called when your extension is deactivated
-// function deactivate() {}
-
-// module.exports = {
-// 	activate,
-// 	deactivate
-// }
-
 const vscode = require('vscode');
 
 function activate(context) {
     console.log('Congratulations, your extension "dashboard-stats" is now active!');
 
     let disposable = vscode.commands.registerCommand('dashboard-stats.launchDashboard', function () {
-        // Create and show a new webview
+        
+		// Create and show a new webview
         const panel = vscode.window.createWebviewPanel(
             'dashboardStats', // Identifies the type of the webview. Used internally
             'Dashboard Stats', // Title of the panel displayed to the user
@@ -66,14 +30,39 @@ function getWebviewContent() {
         <!DOCTYPE html>
         <html>
         <head>
-			Hello from the dashboard
+            <title>Dashboard Stats</title>
+            <style>  
+			body {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr); /* 3 columns with equal width */
+				gap: 20px; /* Gap between grid items */
+				padding: 20px;
+			}
+
+			.grid-item {
+				border: 1px solid #ccc;
+				padding: 10px;
+				text-align: center;
+			}
+
+			.dashboard-title {
+				width: 100%;
+			}
+            </style>
         </head>
         <body>
-
+			<h1 class="dashboard-title">Dashboard stats plugin</h1>
+			<div class="grid-item">Item 1</div>
+			<div class="grid-item">Item 2</div>
+			<div class="grid-item">Item 3</div>
+			<div class="grid-item">Item 4</div>
+			<div class="grid-item">Item 5</div>
+			<div class="grid-item">Item 6</div>
         </body>
         </html>
     `;
 }
+
 
 module.exports = {
     activate,
