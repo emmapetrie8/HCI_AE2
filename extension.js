@@ -29,9 +29,9 @@ function getWebviewContent() {
     return `
         <!DOCTYPE html>
         <html>
-        <head>
-            <title>Dashboard Stats</title>
-            <style>  
+		<head>
+		<title>Dashboard Stats</title>
+		<style>  
 			body {
 				display: grid;
 				grid-template-columns: repeat(3, 1fr); /* 3 columns with equal width */
@@ -43,23 +43,35 @@ function getWebviewContent() {
 				border: 1px solid #ccc;
 				padding: 10px;
 				text-align: center;
+				width: 90%;
+				height: 100px;
 			}
 
 			.dashboard-title {
 				width: 100%;
+				margin-bottom: 20px; /* Add a bottom margin to create space after the heading */
 			}
-            </style>
-        </head>
-        <body>
-			<h1 class="dashboard-title">Dashboard stats plugin</h1>
-			<div class="grid-item">Item 1</div>
-			<div class="grid-item">Item 2</div>
-			<div class="grid-item">Item 3</div>
-			<div class="grid-item">Item 4</div>
-			<div class="grid-item">Item 5</div>
-			<div class="grid-item">Item 6</div>
-        </body>
-        </html>
+
+			/* Make grid items 1 and 2 invisible */
+			.grid-item-hide{
+				display: transparent;
+			}
+
+
+		</style>
+	</head>
+	<body>
+		<h1 class="dashboard-title">Dashboard stats plugin</h1>
+		<div class="grid-item-hide"></div>
+		<div class="grid-item-hide"></div>
+		<div class="grid-item">Item 3</div>
+		<div class="grid-item">Item 4</div>
+		<div class="grid-item">Item 5</div>
+		<div class="grid-item">Item 6</div>
+		<div class="grid-item">Item 6</div>
+		<div class="grid-item">Item 6</div>
+	</body>
+    </html>
     `;
 }
 
