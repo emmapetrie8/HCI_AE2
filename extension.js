@@ -63,7 +63,7 @@ function getWebviewContent() {
 			.heatmap {
 				width: 100%;
 				height: 100%;
-				background: linear-gradient(to bottom, #ffcccc 0%, #ff6666 40%, #ff0000 80%);
+				background: linear-gradient(to bottom, #eda807 20%, #ed8907 40%, #ed6b07 40%);
 			}
 
 			.pie-container {
@@ -108,8 +108,8 @@ function getWebviewContent() {
 			<br>
 			<div class="heatmap-container">
 				<div class="heatmap"></div>
-				<div class="label">Untested code 40%</div>
-				<div class="label">Tested code 60%</div>
+				<div class="label">Labels</div>
+				<div class="label">Labels</div>
 			</div>
 		</div>
 		<div class="grid-item">To-do list</div>
