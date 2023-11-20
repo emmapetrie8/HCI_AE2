@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # dashboard-stats README
 
 This is the README for your extension "dashboard-stats". After writing up a brief description, we recommend including the following sections.
