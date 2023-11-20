@@ -49,19 +49,30 @@ function getWebviewContent() {
 
 			.dashboard-title {
 				width: 100%;
-				margin-bottom: 20px; /* Add a bottom margin to create space after the heading */
+				margin-bottom: 20px;
 			}
 
-			/* Make grid items 1 and 2 invisible */
-			.grid-item-hide{
-				display: transparent;
+			.heatmap-container {
+				height: 80%;
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+				align-items: center;
+			}
+	
+			.heatmap {
+				width: 100%;
+				height: 100%;
+				background: linear-gradient(to bottom, #ffcccc 0%, #ff6666 40%, #ff0000 80%);
 			}
 
 			.pie-container {
 				display: flex;
+				flex-direction: column;
 				justify-content: center;
 				align-items: center;
-				height: 100%;
+				height: 80%;
+				justify-content: flex-end;
 			}
 
 			.pie {
@@ -71,6 +82,12 @@ function getWebviewContent() {
 				border-radius: 50%;
 			}
 
+			.label {
+				color: white;
+				font-size: 15px;
+				margin-top: 5px; 
+			}
+
 		</style>
 	</head>
 	<body>
@@ -78,13 +95,23 @@ function getWebviewContent() {
 		<br>
 		<div class="grid-item">
 			Test coverage visualisation
+			<br>
 			<div class="pie-container">
 				<div class="pie"></div>
+				<div class="label">Untested code 40%</div>
+				<div class="label">Tested code 60%</div>
 			</div>
 		</div>
 		<div class="grid-item">Error navigator</div>
 		<div class="grid-item">Dependencies graph</div>
-		<div class="grid-item">Code smell detector</div>
+		<div class="grid-item">Code smell detector
+			<br>
+			<div class="heatmap-container">
+				<div class="heatmap"></div>
+				<div class="label">Untested code 40%</div>
+				<div class="label">Tested code 60%</div>
+			</div>
+		</div>
 		<div class="grid-item">To-do list</div>
 		<div class="grid-item">Customisation</div>
 	</body>
