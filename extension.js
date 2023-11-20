@@ -75,7 +75,7 @@ function getWebviewContent() {
 	</head>
 	<body>
 		<h1 class="dashboard-title">Dashboard stats plugin</h1>
-		<div class="grid-item-hide"></div>
+		<br>
 		<div class="grid-item">
 			Test coverage visualisation
 			<div class="pie-container">
