@@ -51,7 +51,7 @@ function getWebviewContent(data) {
 				padding: 10px;
 				text-align: center;
 				width: 90%;
-				height: 200px;
+				height: 250px;
 			}
 
 			.dashboard-title {
@@ -78,7 +78,7 @@ function getWebviewContent(data) {
 				flex-direction: column;
 				justify-content: center;
 				align-items: center;
-				height: 80%;
+				height: 70%;
 				justify-content: flex-end;
 			}
 
@@ -95,6 +95,20 @@ function getWebviewContent(data) {
 				margin-top: 5px; 
 			}
 
+			#runTestsButton {
+				background-color: #4CAF50; 
+				color: white; 
+				padding: 10px 20px; 
+				font-size: 10px; /* Font size */
+				border: none; /* No border */
+				border-radius: 5px; /* Rounded corners */
+				cursor: pointer; /* Cursor style on hover */
+			}
+		
+			#runTestsButton:hover {
+				background-color: #45a049; /* Darker green on hover */
+			}
+
 		</style>
 	</head>
 	<body>
@@ -108,6 +122,8 @@ function getWebviewContent(data) {
 				<div class="label">Untested code ${data.testCoverage.untestedCode}%</div>
 				<div class="label">Tested code ${data.testCoverage.testedCode}%</div>
 			</div>
+			<br>
+			<button id="runTestsButton">Run All Tests</button>
 		</div>
 		<div class="grid-item">Error navigator</div>
 		<div class="grid-item">Dependencies graph</div>
@@ -121,6 +137,12 @@ function getWebviewContent(data) {
 		</div>
 		<div class="grid-item">To-do list</div>
 		<div class="grid-item">Customisation</div>
+		<script>
+			const runTestsButton = document.getElementById('runTestsButton');
+			runTestsButton.addEventListener('click', () => {
+				console.log('Running all tests...');
+			});
+		</script>
 	</body>
     </html>
     `;
