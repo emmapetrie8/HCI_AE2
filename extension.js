@@ -1,31 +1,38 @@
 const vscode = require('vscode');
+const path = require('path');  // Correct import for the path module
+const fs = require('fs');
 
 function activate(context) {
     console.log('Congratulations, your extension "dashboard-stats" is now active!');
 
     let disposable = vscode.commands.registerCommand('dashboard-stats.launchDashboard', function () {
-        
 		// Create and show a new webview
-        const panel = vscode.window.createWebviewPanel(
-            'dashboardStats', // Identifies the type of the webview. Used internally
-            'Dashboard Stats', // Title of the panel displayed to the user
-            vscode.ViewColumn.One, // Editor column to show the new webview panel in
-            {}
-        );
-
-        // Get the HTML content for the webview
-        const webviewContent = getWebviewContent();
-
-        // Set the HTML content in the webview
-        panel.webview.html = webviewContent;
-    });
+		const panel = vscode.window.createWebviewPanel(
+			'dashboardStats', // Identifies the type of the webview. Used internally
+			'Dashboard Stats', // Title of the panel displayed to the user
+			vscode.ViewColumn.One, // Editor column to show the new webview panel in
+			{}
+		);
+	
+		// Get the HTML content for the webview and pass the data
+		const webviewContent = getWebviewContent(getDataFromJson());
+		// Set the HTML content in the webview
+		panel.webview.html = webviewContent;
+	});
+	
 
     context.subscriptions.push(disposable);
 }
 
 function deactivate() {}
 
-function getWebviewContent() {
+function getDataFromJson() {
+    const jsonPath = path.join(__dirname, 'data.json'); // Adjust the path to your JSON file
+    const rawData = fs.readFileSync(jsonPath);
+    return JSON.parse(rawData);
+}
+
+function getWebviewContent(data) {
     return `
         <!DOCTYPE html>
         <html>
@@ -98,8 +105,8 @@ function getWebviewContent() {
 			<br>
 			<div class="pie-container">
 				<div class="pie"></div>
-				<div class="label">Untested code 40%</div>
-				<div class="label">Tested code 60%</div>
+				<div class="label">Untested code ${data.testCoverage.untestedCode}%</div>
+				<div class="label">Tested code ${data.testCoverage.testedCode}%</div>
 			</div>
 		</div>
 		<div class="grid-item">Error navigator</div>
@@ -118,7 +125,6 @@ function getWebviewContent() {
     </html>
     `;
 }
-
 
 module.exports = {
     activate,
