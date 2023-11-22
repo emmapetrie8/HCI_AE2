@@ -1,6 +1,6 @@
 {
     "testCoverage": {
-      "untestedCode": 40,
-      "testedCode": 60
+      "untestedCode": 50,
+      "testedCode": 50
     }
 }  

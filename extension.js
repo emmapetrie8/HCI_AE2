@@ -85,7 +85,7 @@ function getWebviewContent(data) {
 			.pie {
 				width: 100px;
 				height: 100px;
-				background-image: conic-gradient(#96577f 40%, #73d9cf 40%, #73d9cf 100%);
+				background-image: conic-gradient(#96577f ${data.testCoverage.untestedCode}%, #73d9cf 40%, #73d9cf 100%);
 				border-radius: 50%;
 			}
 
