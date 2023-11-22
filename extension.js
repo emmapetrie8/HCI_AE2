@@ -5,24 +5,57 @@ const fs = require('fs');
 function activate(context) {
     console.log('Congratulations, your extension "dashboard-stats" is now active!');
 
+    // Register the command
     let disposable = vscode.commands.registerCommand('dashboard-stats.launchDashboard', function () {
-		// Create and show a new webview
-		const panel = vscode.window.createWebviewPanel(
-			'dashboardStats', // Identifies the type of the webview. Used internally
-			'Dashboard Stats', // Title of the panel displayed to the user
-			vscode.ViewColumn.One, // Editor column to show the new webview panel in
-			{}
-		);
-	
-		// Get the HTML content for the webview and pass the data
-		const webviewContent = getWebviewContent(getDataFromJson());
-		// Set the HTML content in the webview
-		panel.webview.html = webviewContent;
-	});
-	
+        // Create and show a new webview
+        const panel = vscode.window.createWebviewPanel(
+            'dashboardStats', // Identifies the type of the webview. Used internally
+            'Dashboard Stats', // Title of the panel displayed to the user
+            vscode.ViewColumn.One, // Editor column to show the new webview panel in
+            {}
+        );
 
+        // Get the HTML content for the webview and pass the data
+        const webviewContent = getWebviewContent(getDataFromJson());
+        // Set the HTML content in the webview
+        panel.webview.html = webviewContent;
+
+        // Handle messages from the webview
+        panel.webview.onDidReceiveMessage(
+            message => {
+                switch (message.command) {
+                    case 'openBugFile':
+                        const bugId = message.bugId;
+                        openBugFile(bugId);
+                        break;
+                }
+            },
+            undefined,
+            context.subscriptions
+        );
+    });
+
+    // Add the disposable to subscriptions
     context.subscriptions.push(disposable);
 }
+
+function openBugFile(bugId) {
+    const bugFilePath = path.join(__dirname, `${bugId}.py`);
+    console.log('Opening file:', bugFilePath);
+
+    vscode.workspace.openTextDocument(bugFilePath).then(
+        (document) => {
+            console.log('Document opened successfully.');
+            vscode.window.showTextDocument(document);
+        },
+        (error) => {
+            console.error('Error opening file:', error);
+        }
+    );
+}
+
+
+
 
 function deactivate() {}
 
@@ -125,7 +158,13 @@ function getWebviewContent(data) {
 			<br>
 			<button id="runTestsButton">Run All Tests</button>
 		</div>
-		<div class="grid-item">Error navigator</div>
+		<div class="grid-item">Error navigator
+			<div id="bugList">
+				<button data-bug-id="bug1">Bug 1</button>
+				<button data-bug-id="bug2">Bug 2</button>
+				<button data-bug-id="bug3">Bug 3</button>
+			</div>
+		</div>
 		<div class="grid-item">Dependencies graph</div>
 		<div class="grid-item">Code smell detector
 			<br>
@@ -138,11 +177,29 @@ function getWebviewContent(data) {
 		<div class="grid-item">To-do list</div>
 		<div class="grid-item">Customisation</div>
 		<script>
-			const runTestsButton = document.getElementById('runTestsButton');
-			runTestsButton.addEventListener('click', () => {
-				console.log('Running all tests...');
+        document.addEventListener('DOMContentLoaded', function () {
+            const vscode = acquireVsCodeApi(); // Acquire the vscode API for communication
+
+            const runTestsButton = document.getElementById('runTestsButton');
+            runTestsButton.addEventListener('click', () => {
+                console.log('Running all tests...');
+            });
+
+            const bugList = document.getElementById('bugList');
+			bugList.addEventListener('click', (event) => {
+				const button = event.target.closest('button');
+				if (button) {
+					const bugId = button.dataset.bugId;
+					if (bugId) {
+						vscode.postMessage({
+							command: 'openBugFile',
+							bugId: bugId
+						});
+					}
+				}
 			});
-		</script>
+        });
+    </script>
 	</body>
     </html>
     `;
