@@ -1,31 +1,72 @@
 const vscode = require('vscode');
+const fs = require('fs');
+const path = require('path');
 
-function activate(context) {
-    console.log('Congratulations, your extension "dashboard-stats" is now active!');
+const logOutputChannel = vscode.window.createOutputChannel('Log Viewer');
 
-    let disposable = vscode.commands.registerCommand('dashboard-stats.launchDashboard', function () {
-        
-		// Create and show a new webview
-        const panel = vscode.window.createWebviewPanel(
-            'dashboardStats', // Identifies the type of the webview. Used internally
-            'Dashboard Stats', // Title of the panel displayed to the user
-            vscode.ViewColumn.One, // Editor column to show the new webview panel in
-            {}
-        );
+function readAndDisplayErrorLogs() {
+    return new Promise((resolve, reject) => {
+        const logFilePath = path.join(__dirname, 'sample.log');
+
+        // Read the log file
+        fs.readFile(logFilePath, 'utf-8', (err, data) => {
+            if (err) {
+                vscode.window.showErrorMessage(`Error reading log file: ${err.message}`);
+                reject(err);
+            } else {
+                // Filter logs for errors
+                const errorLogs = data
+                    .split('\n')
+                    .filter(line => line.includes('ERROR'));
+
+                // Display error logs in the output channel
+                if (errorLogs.length > 0) {
+                    logOutputChannel.clear();
+                    logOutputChannel.appendLine('Error Logs:');
+                    logOutputChannel.append(errorLogs.join('\n'));
+                    logOutputChannel.show(true);
+                    resolve(errorLogs);
+                } else {
+                    vscode.window.showInformationMessage('No error logs found.');
+                    resolve([]);
+                }
+            }
+        });
+    });
+}
+
+
+async function launchDashboard() {
+    // Create and show a new webview
+    const panel = vscode.window.createWebviewPanel(
+        'dashboardStats', // Identifies the type of the webview. Used internally
+        'Dashboard Stats', // Title of the panel displayed to the user
+        vscode.ViewColumn.One, // Editor column to show the new webview panel in
+        {}
+    );
+
+    try {
+        const errorLogs = await readAndDisplayErrorLogs();
 
         // Get the HTML content for the webview
-        const webviewContent = getWebviewContent();
+        const webviewContent = getWebviewContent(errorLogs);
 
         // Set the HTML content in the webview
         panel.webview.html = webviewContent;
-    });
+    } catch (error) {
+        // Handle the error as needed
+        console.error(error);
+    }
+}
 
-    context.subscriptions.push(disposable);
+function activate(context) {
+    console.log('Congratulations, your extension "dashboard-stats" is now active!');
+    let disposable = vscode.commands.registerCommand('dashboard-stats.launchDashboard', launchDashboard);
 }
 
 function deactivate() {}
 
-function getWebviewContent() {
+function getWebviewContent(errorLogs) {
     return `
         <!DOCTYPE html>
         <html>
@@ -102,7 +143,15 @@ function getWebviewContent() {
 				<div class="label">Tested code 60%</div>
 			</div>
 		</div>
-		<div class="grid-item">Error navigator</div>
+		<div class="grid-item">Error navigator
+		<div class="error-logs">
+		<h2>Error Logs</h2>
+		<ul>
+			${errorLogs.map(log => `<li>${log}</li>`).join('')}
+		</ul>
+		</div>
+		
+		</div>
 		<div class="grid-item">Dependencies graph</div>
 		<div class="grid-item">Code smell detector
 			<br>
@@ -117,6 +166,17 @@ function getWebviewContent() {
 	</body>
     </html>
     `;
+}
+
+function updateWebviewContent(errorLogs) {
+    // Find and update the existing webview if it's already created
+    const existingWebview = vscode.window.visibleTextEditors.find(editor =>
+        editor.document.uri.scheme === 'dashboard-stats'
+    );
+
+    if (existingWebview) {
+        existingWebview.webview.html = getWebviewContent(errorLogs);
+    }
 }
 
 

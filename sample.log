@@ -1,0 +1,6 @@
+2023-11-22 12:30:00 INFO: Application started
+2023-11-22 12:31:15 ERROR: Database connection failed
+2023-11-22 12:32:10 ERROR: File not found: /path/to/file.txt
+2023-11-22 12:33:45 INFO: User logged in: john_doe
+2023-11-22 12:35:20 ERROR: Invalid input: Missing required field
+2023-11-22 12:36:05 INFO: Application shutdown
