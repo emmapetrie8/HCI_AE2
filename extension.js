@@ -79,7 +79,11 @@ function getDataFromJson() {
 }
 
 function getWebviewContent(errorLogs, data) {
-	const errorListHtml = errorLogs.map(log => `<li>${log} <button id= "nav">nav</button> </li>`).join('');
+	const errorListHtml = errorLogs.map(log => {
+        const [message, file, lineNum] = log;
+        return `<li><span id="error-message">${message}</span> at ${file} on line ${lineNum} <button id="nav">nav</button></li>`;
+    }).join('');
+
     return `
         <!DOCTYPE html>
         <html>
@@ -166,6 +170,11 @@ function getWebviewContent(errorLogs, data) {
 				border-radius: 5px; /* Rounded corners */
 				cursor: pointer; /* Cursor style on hover */
 			}
+
+			#error-message{
+				color: red;
+			}
+			
 
 		</style>
 	</head>
