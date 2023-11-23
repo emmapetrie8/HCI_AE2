@@ -1,6 +1,8 @@
-2023-11-22 12:30:00 INFO: Application started
-2023-11-22 12:31:15 ERROR: Database connection failed
-2023-11-22 12:32:10 ERROR: File not found: /path/to/file.txt
-2023-11-22 12:33:45 INFO: User logged in: john_doe
-2023-11-22 12:35:20 ERROR: Invalid input: Missing required field
-2023-11-22 12:36:05 INFO: Application shutdown
+2023-11-22 12:35:20 INFO: Application started
+2023-11-22 12:35:25 ERROR [file1.js:42]: Invalid input: Missing required field
+2023-11-22 12:36:00 DEBUG [file2.js:10]: Processing data
+2023-11-22 12:36:10 ERROR [file1.js:55]: Database connection failed
+2023-11-22 12:37:05 INFO: Data processing complete
+2023-11-22 12:37:20 WARNING [file3.js:30]: Low disk space
+2023-11-22 12:38:00 ERROR [file4.js:15]: Server timeout
+2023-11-22 12:39:15 INFO: Application stopped

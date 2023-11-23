@@ -2,8 +2,6 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 
-const logOutputChannel = vscode.window.createOutputChannel('Log Viewer');
-
 function readAndDisplayErrorLogs() {
     return new Promise((resolve, reject) => {
         const logFilePath = path.join(__dirname, 'sample.log');
@@ -17,19 +15,18 @@ function readAndDisplayErrorLogs() {
                 // Filter logs for errors
                 const errorLogs = data
                     .split('\n')
-                    .filter(line => line.includes('ERROR'));
+                    .map(line => {
+                        const errorIndex = line.indexOf('ERROR');
+                        return errorIndex !== -1 ? line.substring(errorIndex + 'ERROR'.length + 1).trim() : null;
+                    })
+                    .filter(Boolean);
 
-                // Display error logs in the output channel
-                if (errorLogs.length > 0) {
-                    logOutputChannel.clear();
-                    logOutputChannel.appendLine('Error Logs:');
-                    logOutputChannel.append(errorLogs.join('\n'));
-                    logOutputChannel.show(true);
-                    resolve(errorLogs);
-                } else {
-                    vscode.window.showInformationMessage('No error logs found.');
-                    resolve([]);
-                }
+				if (errorLogs.length > 0){
+					resolve(errorLogs);
+				} else {
+					data = 'No error logs found.'
+					resolve([]);
+				}
             }
         });
     });
