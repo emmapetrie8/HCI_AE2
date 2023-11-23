@@ -70,6 +70,7 @@ function activate(context) {
     let disposable = vscode.commands.registerCommand('dashboard-stats.launchDashboard', launchDashboard);
 }
 
+
 function deactivate() {}
 
 function getDataFromJson() {
@@ -213,11 +214,15 @@ function getWebviewContent(errorLogs, data) {
 		<div class="grid-item">To-do list</div>
 		<div class="grid-item">Customisation</div>
 		<script>
-			const runTestsButton = document.getElementById('runTestsButton');
-			runTestsButton.addEventListener('click', () => {
-				console.log('Running all tests...');
-			});
-		</script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const vscode = acquireVsCodeApi(); // Acquire the vscode API for communication
+
+            const runTestsButton = document.getElementById('runTestsButton');
+            runTestsButton.addEventListener('click', () => {
+                console.log('Running all tests...');
+            });
+        });
+    </script>
 	</body>
     </html>
     `;
