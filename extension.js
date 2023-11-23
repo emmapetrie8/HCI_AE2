@@ -48,7 +48,7 @@ async function launchDashboard() {
         'dashboardStats', // Identifies the type of the webview. Used internally
         'Dashboard Stats', // Title of the panel displayed to the user
         vscode.ViewColumn.One, // Editor column to show the new webview panel in
-        {}
+        { enableScripts: true } // Webview options. enableScripts allows scripts to run in the webview
     );
 
     try {
@@ -178,42 +178,41 @@ function getWebviewContent(errorLogs, data) {
 			
 
 		</style>
-	</head>
-	<body>
-		<h1 class="dashboard-title">Dashboard stats plugin</h1>
-		<br>
-		<div class="grid-item">
-			Test coverage visualisation
-			<br>
-			<div class="pie-container">
-				<div class="pie"></div>
-				<div class="label">Untested code ${data.testCoverage.untestedCode}%</div>
-				<div class="label">Tested code ${data.testCoverage.testedCode}%</div>
-			</div>
-			<br>
-			<button id="runTestsButton">Run All Tests</button>
-		</div>
-		<div class="grid-item">Error navigator
-		<div class="error-logs">
-		<h2>Error Logs</h2>
-		<ul class="error-list">
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Add this line -->
+        </head>
+        <body>
+        <h1 class="dashboard-title">Dashboard stats plugin</h1>
+        <br>
+        <div class="grid-item">
+            Test coverage visualisation
+            <br>
+            <div class="pie-container">
+                <div class="pie"></div>
+                <div class="label">Untested code ${data.testCoverage.untestedCode}%</div>
+                <div class="label">Tested code ${data.testCoverage.testedCode}%</div>
+            </div>
+            <br>
+            <button id="runTestsButton">Run All Tests</button>
+        </div>
+        <div class="grid-item">Error navigator
+        <div class="error-logs">
+        <h2>Error Logs</h2>
+        <ul class="error-list">
                     ${errorListHtml}
                 </ul>
-		</div>
-		
-		</div>
-		<div class="grid-item">Dependencies graph</div>
-		<div class="grid-item">Code smell detector
-			<br>
-			<div class="heatmap-container">
-				<div class="heatmap"></div>
-				<div class="label">Labels</div>
-				<div class="label">Labels</div>
-			</div>
-		</div>
-		<div class="grid-item">To-do list</div>
-		<div class="grid-item">Customisation</div>
-		<script>
+        </div>
+        
+        </div>
+        <div class="grid-item">Dependencies graph</div>
+        <div class="grid-item">Code smell detector
+            <br>
+            <div class="heatmap-container">
+                <canvas id="radarChart"></canvas> <!-- Replace the heatmap div with this canvas element -->
+            </div>
+        </div>
+        <div class="grid-item">To-do list</div>
+        <div class="grid-item">Customisation</div>
+        <script>
         document.addEventListener('DOMContentLoaded', function () {
             const vscode = acquireVsCodeApi(); // Acquire the vscode API for communication
 
@@ -221,10 +220,37 @@ function getWebviewContent(errorLogs, data) {
             runTestsButton.addEventListener('click', () => {
                 console.log('Running all tests...');
             });
+
+            // Add the following code to create the radar chart
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Eating', 'Drinking', 'Sleeping', 'Designing', 'Coding', 'Cycling', 'Running'],
+                    datasets: [{
+                        label: 'My First Dataset',
+                        data: [65, 59, 90, 81, 56, 55, 40],
+                        fill: true,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgb(255, 99, 132)',
+                        pointBackgroundColor: 'rgb(255, 99, 132)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(255, 99, 132)'
+                    }]
+                },
+                options: {
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    }
+                },
+            });
         });
-    </script>
-	</body>
-    </html>
+        </script>
+        </body>
+        </html>
     `;
 }
 
