@@ -2,6 +2,8 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 
+const filePath = path.join(__dirname, 'bug1.py');
+
 function readAndDisplayErrorLogs() {
     return new Promise((resolve, reject) => {
         const logFilePath = path.join(__dirname, 'sample.log');
@@ -50,8 +52,7 @@ async function launchDashboard() {
         vscode.ViewColumn.One, // Editor column to show the new webview panel in
         { enableScripts: true } // Webview options. enableScripts allows scripts to run in the webview
     );
-
-    try {
+	try {
         const errorLogs = await readAndDisplayErrorLogs();
 
         // Get the HTML content for the webview
@@ -59,15 +60,30 @@ async function launchDashboard() {
 
         // Set the HTML content in the webview
         panel.webview.html = webviewContent;
+        console.log('Dashboard launched successfully.');
     } catch (error) {
         // Handle the error as needed
         console.error(error);
     }
+
 }
 
 function activate(context) {
     console.log('Congratulations, your extension "dashboard-stats" is now active!');
     let disposable = vscode.commands.registerCommand('dashboard-stats.launchDashboard', launchDashboard);
+	context.subscriptions.push(disposable);
+
+    // Register a message listener to handle messages from the webview
+	context.subscriptions.push(
+		vscode.commands.registerCommand('dashboard-stats.postMessage', message => {
+			if (message.command === 'openFile') {
+				vscode.workspace.openTextDocument(vscode.Uri.file(message.filePath))
+					.then(doc => vscode.window.showTextDocument(doc))
+					.catch(error => console.error(`Error opening file: ${error}`));
+			}
+		})
+	);
+
 }
 
 
@@ -80,9 +96,9 @@ function getDataFromJson() {
 }
 
 function getWebviewContent(errorLogs, data) {
-	const errorListHtml = errorLogs.map(log => {
+    const errorListHtml = errorLogs.map((log, index) => {
         const [message, file, lineNum] = log;
-        return `<li><span id="error-message">${message}</span> at ${file} on line ${lineNum} <button id="nav">nav</button></li>`;
+        return `<li><span id="error-message">${message}</span> at ${file} on line ${lineNum} <button id="nav${index}">nav</button></li>`;
     }).join('');
 
     return `
@@ -194,13 +210,14 @@ function getWebviewContent(errorLogs, data) {
             <br>
             <button id="runTestsButton">Run All Tests</button>
         </div>
-        <div class="grid-item">Error navigator
-        <div class="error-logs">
-        <h2>Error Logs</h2>
-        <ul class="error-list">
-                    ${errorListHtml}
-                </ul>
-        </div>
+		<div class="grid-item">Error navigator
+			<div class="error-logs">
+				<h2>Error Logs</h2>
+				<ul class="error-list">
+					${errorListHtml}
+				</ul>
+			</div>
+		</div>
         
         </div>
         <div class="grid-item">Dependencies graph</div>
@@ -213,8 +230,17 @@ function getWebviewContent(errorLogs, data) {
         <div class="grid-item">To-do list</div>
         <div class="grid-item">Customisation</div>
         <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        	document.addEventListener('DOMContentLoaded', function () {
             const vscode = acquireVsCodeApi(); // Acquire the vscode API for communication
+
+			// Add event listeners for each button
+			${errorLogs.map((log, index) => `
+				const navButton${index} = document.getElementById('nav${index}');
+				navButton${index}.addEventListener('click', () => {
+					console.log('Button clicked:', 'bug1.py');
+					vscode.postMessage({ command: 'openFile', filePath: '${filePath}' });
+				});
+			`).join('')}
 
             const runTestsButton = document.getElementById('runTestsButton');
             runTestsButton.addEventListener('click', () => {
