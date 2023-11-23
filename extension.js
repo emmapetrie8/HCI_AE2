@@ -19,42 +19,11 @@ function activate(context) {
         const webviewContent = getWebviewContent(getDataFromJson());
         // Set the HTML content in the webview
         panel.webview.html = webviewContent;
-
-        // Handle messages from the webview
-        panel.webview.onDidReceiveMessage(
-            message => {
-                switch (message.command) {
-                    case 'openBugFile':
-                        const bugId = message.bugId;
-                        openBugFile(bugId);
-                        break;
-                }
-            },
-            undefined,
-            context.subscriptions
-        );
     });
 
     // Add the disposable to subscriptions
     context.subscriptions.push(disposable);
 }
-
-function openBugFile(bugId) {
-    const bugFilePath = path.join(__dirname, `${bugId}.py`);
-    console.log('Opening file:', bugFilePath);
-
-    vscode.workspace.openTextDocument(bugFilePath).then(
-        (document) => {
-            console.log('Document opened successfully.');
-            vscode.window.showTextDocument(document);
-        },
-        (error) => {
-            console.error('Error opening file:', error);
-        }
-    );
-}
-
-
 
 
 function deactivate() {}
@@ -158,13 +127,7 @@ function getWebviewContent(data) {
 			<br>
 			<button id="runTestsButton">Run All Tests</button>
 		</div>
-		<div class="grid-item">Error navigator
-			<div id="bugList">
-				<button data-bug-id="bug1">Bug 1</button>
-				<button data-bug-id="bug2">Bug 2</button>
-				<button data-bug-id="bug3">Bug 3</button>
-			</div>
-		</div>
+		<div class="grid-item">Error navigator</div>
 		<div class="grid-item">Dependencies graph</div>
 		<div class="grid-item">Code smell detector
 			<br>
@@ -184,20 +147,6 @@ function getWebviewContent(data) {
             runTestsButton.addEventListener('click', () => {
                 console.log('Running all tests...');
             });
-
-            const bugList = document.getElementById('bugList');
-			bugList.addEventListener('click', (event) => {
-				const button = event.target.closest('button');
-				if (button) {
-					const bugId = button.dataset.bugId;
-					if (bugId) {
-						vscode.postMessage({
-							command: 'openBugFile',
-							bugId: bugId
-						});
-					}
-				}
-			});
         });
     </script>
 	</body>
