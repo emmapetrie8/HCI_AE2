@@ -85,7 +85,7 @@ function getWebviewContent(errorLogs) {
 				padding: 10px;
 				text-align: center;
 				width: 90%;
-				height: 200px;
+				height: 250px;
 			}
 
 			.dashboard-title {
@@ -112,14 +112,14 @@ function getWebviewContent(errorLogs) {
 				flex-direction: column;
 				justify-content: center;
 				align-items: center;
-				height: 80%;
+				height: 70%;
 				justify-content: flex-end;
 			}
 
 			.pie {
 				width: 100px;
 				height: 100px;
-				background-image: conic-gradient(#96577f 40%, #73d9cf 40%, #73d9cf 100%);
+				background-image: conic-gradient(#96577f ${data.testCoverage.untestedCode}%, #73d9cf 40%, #73d9cf 100%);
 				border-radius: 50%;
 			}
 
@@ -127,6 +127,20 @@ function getWebviewContent(errorLogs) {
 				color: white;
 				font-size: 15px;
 				margin-top: 5px; 
+			}
+
+			#runTestsButton {
+				background-color: #4CAF50; 
+				color: white; 
+				padding: 10px 20px; 
+				font-size: 10px; /* Font size */
+				border: none; /* No border */
+				border-radius: 5px; /* Rounded corners */
+				cursor: pointer; /* Cursor style on hover */
+			}
+		
+			#runTestsButton:hover {
+				background-color: #45a049; /* Darker green on hover */
 			}
 
 		</style>
@@ -139,8 +153,8 @@ function getWebviewContent(errorLogs) {
 			<br>
 			<div class="pie-container">
 				<div class="pie"></div>
-				<div class="label">Untested code 40%</div>
-				<div class="label">Tested code 60%</div>
+				<div class="label">Untested code ${data.testCoverage.untestedCode}%</div>
+				<div class="label">Tested code ${data.testCoverage.testedCode}%</div>
 			</div>
 		</div>
 		<div class="grid-item">Error navigator
@@ -163,6 +177,12 @@ function getWebviewContent(errorLogs) {
 		</div>
 		<div class="grid-item">To-do list</div>
 		<div class="grid-item">Customisation</div>
+		<script>
+			const runTestsButton = document.getElementById('runTestsButton');
+			runTestsButton.addEventListener('click', () => {
+				console.log('Running all tests...');
+			});
+		</script>
 	</body>
     </html>
     `;
