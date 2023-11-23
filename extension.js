@@ -17,7 +17,16 @@ function readAndDisplayErrorLogs() {
                     .split('\n')
                     .map(line => {
                         const errorIndex = line.indexOf('ERROR');
-                        return errorIndex !== -1 ? line.substring(errorIndex + 'ERROR'.length + 1).trim() : null;
+						if (errorIndex !== -1){
+							const errorInfo = line.substring(errorIndex + 'ERROR'.length + 1).trim()
+							const match = errorInfo.match(/\[(.*?):(\d+)\]:(.*)/);
+                            if (match) {
+                                const [, file, lineNum, message] = match;
+                                return [message, file, lineNum];
+                            }
+						} else {
+							return null, null, null 
+						}
                     })
                     .filter(Boolean);
 
@@ -70,6 +79,7 @@ function getDataFromJson() {
 }
 
 function getWebviewContent(errorLogs, data) {
+	const errorListHtml = errorLogs.map(log => `<li>${log} <button id= "nav">nav</button> </li>`).join('');
     return `
         <!DOCTYPE html>
         <html>
@@ -146,6 +156,17 @@ function getWebviewContent(errorLogs, data) {
 				background-color: #45a049; /* Darker green on hover */
 			}
 
+			#nav{
+				background-color: #4CAF50; 
+				height: 20px
+				width: 20px
+				color: white; 
+				font-size: 10px; /* Font size */
+				border: none; /* No border */
+				border-radius: 5px; /* Rounded corners */
+				cursor: pointer; /* Cursor style on hover */
+			}
+
 		</style>
 	</head>
 	<body>
@@ -165,9 +186,9 @@ function getWebviewContent(errorLogs, data) {
 		<div class="grid-item">Error navigator
 		<div class="error-logs">
 		<h2>Error Logs</h2>
-		<ul>
-			${errorLogs.map(log => `<li>${log}</li>`).join('')}
-		</ul>
+		<ul class="error-list">
+                    ${errorListHtml}
+                </ul>
 		</div>
 		
 		</div>
