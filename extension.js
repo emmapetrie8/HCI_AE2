@@ -49,7 +49,7 @@ async function launchDashboard() {
         const errorLogs = await readAndDisplayErrorLogs();
 
         // Get the HTML content for the webview
-        const webviewContent = getWebviewContent(errorLogs);
+        const webviewContent = getWebviewContent(errorLogs, getDataFromJson());
 
         // Set the HTML content in the webview
         panel.webview.html = webviewContent;
@@ -66,7 +66,13 @@ function activate(context) {
 
 function deactivate() {}
 
-function getWebviewContent(errorLogs) {
+function getDataFromJson() {
+    const jsonPath = path.join(__dirname, 'data.json'); // Adjust the path to your JSON file
+    const rawData = fs.readFileSync(jsonPath);
+    return JSON.parse(rawData);
+}
+
+function getWebviewContent(errorLogs, data) {
     return `
         <!DOCTYPE html>
         <html>
@@ -156,6 +162,8 @@ function getWebviewContent(errorLogs) {
 				<div class="label">Untested code ${data.testCoverage.untestedCode}%</div>
 				<div class="label">Tested code ${data.testCoverage.testedCode}%</div>
 			</div>
+			<br>
+			<button id="runTestsButton">Run All Tests</button>
 		</div>
 		<div class="grid-item">Error navigator
 		<div class="error-logs">
