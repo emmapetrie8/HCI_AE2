@@ -1,4 +1,5 @@
 const vscode = require('vscode');
+const madge = require('madge');
 const fs = require('fs');
 const path = require('path');
 
@@ -53,9 +54,19 @@ async function launchDashboard() {
 
     try {
         const errorLogs = await readAndDisplayErrorLogs();
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) {
+            vscode.window.showErrorMessage('No folder or workspace opened');
+            return;
+        }
+
+        const rootPath = workspaceFolders[0].uri.fsPath;
+        const dependencyGraph = await madge(rootPath).then(res => res.obj());
+
+        vscode.window.showInformationMessage(JSON.stringify(dependencyGraph, null, 2));
 
         // Get the HTML content for the webview
-        const webviewContent = getWebviewContent(errorLogs, getDataFromJson());
+        const webviewContent = getWebviewContent(errorLogs, getDataFromJson(), dependencyGraph);
 
         // Set the HTML content in the webview
         panel.webview.html = webviewContent;
@@ -79,7 +90,7 @@ function getDataFromJson() {
     return JSON.parse(rawData);
 }
 
-function getWebviewContent(errorLogs, data) {
+function getWebviewContent(errorLogs, data, dependencyGraph) {
 	const errorListHtml = errorLogs.map(log => {
         const [message, file, lineNum] = log;
         return `<li><span id="error-message">${message}</span> at ${file} on line ${lineNum} <button id="nav">nav</button></li>`;
@@ -203,7 +214,11 @@ function getWebviewContent(errorLogs, data) {
         </div>
         
         </div>
-        <div class="grid-item">Dependencies graph</div>
+        <div class="grid-item">Dependencies graph
+            <div class="dependencyGraph">
+                ${JSON.stringify(dependencyGraph)}
+            </div>
+        </div>
         <div class="grid-item">Code smell detector
             <br>
             <div class="heatmap-container">
