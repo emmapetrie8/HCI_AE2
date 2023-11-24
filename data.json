@@ -3,5 +3,11 @@
       "untestedCode": 40,
       "testedCode": 60
     
+    },
+    "radarChart": {
+      "fileA": 50,
+      "fileB": 69,
+      "fileC": 20,
+      "fileD": 45
     }
 }  

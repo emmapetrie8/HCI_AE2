@@ -178,7 +178,7 @@ function getWebviewContent(errorLogs, data) {
 			
 
 		</style>
-		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Add this line -->
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         </head>
         <body>
         <h1 class="dashboard-title">Dashboard stats plugin</h1>
@@ -226,10 +226,10 @@ function getWebviewContent(errorLogs, data) {
             new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['Eating', 'Drinking', 'Sleeping', 'Designing', 'Coding', 'Cycling', 'Running'],
+                    labels: ${JSON.stringify(Object.keys(data.radarChart))},
                     datasets: [{
                         label: 'My First Dataset',
-                        data: [65, 59, 90, 81, 56, 55, 40],
+                        data: ${JSON.stringify(Object.values(data.radarChart))},
                         fill: true,
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                         borderColor: 'rgb(255, 99, 132)',
