@@ -2,6 +2,53 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 
+// / Function to parse a JavaScript/TypeScript file and extract its dependencies
+function parseFile(filePath) {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const dependencies = [];
+    
+    // Use a regular expression or an AST parser to identify import statements
+    const importStatements = content.match(/import .* from ['"](.*)['"]/g) || [];
+    
+    for (const statement of importStatements) {
+        // Extract the module name from the import statement
+        const match = statement.match(/import .* from ['"](.*)['"]/);
+        if (match && match[1]) {
+            dependencies.push(match[1]);
+        }
+    }
+
+    return dependencies;
+}
+
+// Function to traverse the project directory and build a dependency graph
+function buildDependencyGraph(rootDir) {
+    const graph = {};
+
+    function traverseDirectory(currentDir) {
+        const files = fs.readdirSync(currentDir);
+
+        for (const file of files) {
+            const filePath = path.join(currentDir, file);
+
+            if (fs.statSync(filePath).isDirectory()) {
+                traverseDirectory(filePath);
+            } else if (filePath.endsWith('.js') || filePath.endsWith('.ts')) {
+                // Parse the file and get its dependencies
+                const dependencies = parseFile(filePath);
+
+                // Add the file and its dependencies to the graph
+                const fileName = path.relative(rootDir, filePath);
+                graph[fileName] = dependencies;
+            }
+        }
+    }
+
+    traverseDirectory(rootDir);
+
+    return graph;
+}
+
 const filePath = path.join(__dirname, 'bug1.py');
 
 function readAndDisplayErrorLogs() {
@@ -52,11 +99,12 @@ async function launchDashboard() {
         vscode.ViewColumn.One, // Editor column to show the new webview panel in
         { enableScripts: true } // Webview options. enableScripts allows scripts to run in the webview
     );
-	try {
+    try {
         const errorLogs = await readAndDisplayErrorLogs();
+        const dependencyGraph = buildDependencyGraph('/dependencyProject');
 
         // Get the HTML content for the webview
-        const webviewContent = getWebviewContent(errorLogs, getDataFromJson());
+        const webviewContent = getWebviewContent(errorLogs, getDataFromJson(), dependencyGraph);
 
         // Set the HTML content in the webview
         panel.webview.html = webviewContent;
@@ -99,6 +147,12 @@ function getWebviewContent(errorLogs, data) {
     const errorListHtml = errorLogs.map((log, index) => {
         const [message, file, lineNum] = log;
         return `<li><span id="error-message">${message}</span> at ${file} on line ${lineNum} <button id="nav${index}">nav</button></li>`;
+    }).join('');
+
+    // Convert dependency graph to a format suitable for display in HTML
+    const graphHtml = Object.entries(dependencyGraph).map(([file, dependencies]) => {
+        const dependenciesList = dependencies.map(dep => `<li>${dep}</li>`).join('');
+        return `<li>${file}<ul>${dependenciesList}</ul></li>`;
     }).join('');
 
     return `
@@ -191,10 +245,28 @@ function getWebviewContent(errorLogs, data) {
 			#error-message{
 				color: red;
 			}
-			
+
+            #dependencyGraph {
+                overflow-y: auto;
+                height: 100%;
+                padding: 10px;
+            }
+
+            .dependency-node {
+                list-style-type: none;
+                margin-bottom: 10px;
+            }
+
+            .dependency-file {
+                font-weight: bold;
+            }
+
+            .dependency-list {
+                margin-left: 20px;
+            }			
 
 		</style>
-		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Add this line -->
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         </head>
         <body>
         <h1 class="dashboard-title">Dashboard stats plugin</h1>
@@ -220,7 +292,14 @@ function getWebviewContent(errorLogs, data) {
 		</div>
         
         </div>
-        <div class="grid-item">Dependencies graph</div>
+        <div class="grid-item">
+            Dependencies graph
+            <div id="dependencyGraph">
+                <ul class="dependency-node">
+                    ${graphHtml}
+                </ul>
+            </div>
+        </div>
         <div class="grid-item">Code smell detector
             <br>
             <div class="heatmap-container">
@@ -252,10 +331,10 @@ function getWebviewContent(errorLogs, data) {
             new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['Eating', 'Drinking', 'Sleeping', 'Designing', 'Coding', 'Cycling', 'Running'],
+                    labels: ${JSON.stringify(Object.keys(data.radarChart))},
                     datasets: [{
                         label: 'My First Dataset',
-                        data: [65, 59, 90, 81, 56, 55, 40],
+                        data: ${JSON.stringify(Object.values(data.radarChart))},
                         fill: true,
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                         borderColor: 'rgb(255, 99, 132)',
@@ -296,3 +375,9 @@ module.exports = {
     activate,
     deactivate
 };
+
+// Example: Generate and log the dependency graph for a Node.js project
+const projectRoot = '/dependencyProject';
+const dependencyGraph = buildDependencyGraph(projectRoot);
+
+console.log(dependencyGraph);
