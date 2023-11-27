@@ -1,4 +1,5 @@
 const vscode = require('vscode');
+const madge = require('madge');
 const fs = require('fs');
 const path = require('path');
 
@@ -53,9 +54,19 @@ async function launchDashboard() {
 
     try {
         const errorLogs = await readAndDisplayErrorLogs();
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) {
+            vscode.window.showErrorMessage('No folder or workspace opened');
+            return;
+        }
+
+        const rootPath = workspaceFolders[0].uri.fsPath;
+        const dependencyGraph = await madge(rootPath).then(res => res.obj());
+
+        //vscode.window.showInformationMessage(JSON.stringify(dependencyGraph, null, 2));
 
         // Get the HTML content for the webview
-        const webviewContent = getWebviewContent(errorLogs, getDataFromJson());
+        const webviewContent = getWebviewContent(errorLogs, getDataFromJson(),dependencyGraph);
 
         // Set the HTML content in the webview
         panel.webview.html = webviewContent;
@@ -70,7 +81,6 @@ function activate(context) {
     let disposable = vscode.commands.registerCommand('dashboard-stats.launchDashboard', launchDashboard);
 }
 
-
 function deactivate() {}
 
 function getDataFromJson() {
@@ -79,7 +89,7 @@ function getDataFromJson() {
     return JSON.parse(rawData);
 }
 
-function getWebviewContent(errorLogs, data) {
+function getWebviewContent(errorLogs, data, dependencyGraph) {
 	const errorListHtml = errorLogs.map(log => {
         const [message, file, lineNum] = log;
         return `<li><span id="error-message">${message}</span> at ${file} on line ${lineNum} <button id="nav">nav</button></li>`;
@@ -107,7 +117,8 @@ function getWebviewContent(errorLogs, data) {
 			}
 
 			.dashboard-title {
-				width: 100%;
+				text-align: center;
+				margin: 0 auto;
 				margin-bottom: 20px;
 			}
 
@@ -179,10 +190,23 @@ function getWebviewContent(errorLogs, data) {
 
 		</style>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
         </head>
         <body>
+		<div>
         <h1 class="dashboard-title">Dashboard stats plugin</h1>
+		</div>
         <br>
+		<div class="grid-item">Dependencies graph
+		<div id="dependency-graph" style="height: 240px;"></div>
+        </div>
+        <div class="grid-item">Code smell detector
+            <br>
+            <div class="heatmap-container">
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+
         <div class="grid-item">
             Test coverage visualisation
             <br>
@@ -198,73 +222,72 @@ function getWebviewContent(errorLogs, data) {
         <div class="error-logs">
         <h2>Error Logs</h2>
         <ul class="error-list">
-                    ${errorListHtml}
-                </ul>
+            ${errorListHtml}
+        </ul>
         </div>
         
         </div>
-        <div class="grid-item">Dependencies graph</div>
-        <div class="grid-item">Code smell detector
-            <br>
-            <div class="heatmap-container">
-                <canvas id="radarChart"></canvas> <!-- Replace the heatmap div with this canvas element -->
-            </div>
-        </div>
-        <div class="grid-item">To-do list</div>
-        <div class="grid-item">Customisation</div>
+        
+
         <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const vscode = acquireVsCodeApi(); // Acquire the vscode API for communication
+    document.addEventListener('DOMContentLoaded', function () {
+        const networkData = ${JSON.stringify(dependencyGraph)};
+        const container = document.getElementById('dependency-graph');
+        const nodes = [];
+        const edges = [];
 
-            const runTestsButton = document.getElementById('runTestsButton');
-            runTestsButton.addEventListener('click', () => {
-                console.log('Running all tests...');
-            });
+        for (const [file, dependencies] of Object.entries(networkData)) {
+            nodes.push({ id: file, label: file });
+            for (const depFile of dependencies) {
+                edges.push({ from: file, to: depFile });
+            }
+        }
 
-            // Add the following code to create the radar chart
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: ${JSON.stringify(Object.keys(data.radarChart))},
-                    datasets: [{
-                        label: 'My First Dataset',
-                        data: ${JSON.stringify(Object.values(data.radarChart))},
-                        fill: true,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgb(255, 99, 132)',
-                        pointBackgroundColor: 'rgb(255, 99, 132)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgb(255, 99, 132)'
-                    }]
-                },
-                options: {
-                    elements: {
-                        line: {
-                            borderWidth: 3
-                        }
-                    }
-                },
-            });
+        const graphData = {
+            nodes: new vis.DataSet(nodes),
+            edges: new vis.DataSet(edges)
+        };
+
+        const graphOptions = {};
+        const network = new vis.Network(container, graphData, graphOptions);
+
+        const runTestsButton = document.getElementById('runTestsButton');
+        runTestsButton.addEventListener('click', () => {
+            console.log('Running all tests...');
         });
-        </script>
+
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ${JSON.stringify(Object.keys(data.radarChart))},
+                datasets: [{
+                    label: 'Code Smells',
+                    data: ${JSON.stringify(Object.values(data.radarChart))},
+                    fill: true,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    pointBackgroundColor: 'rgb(255, 99, 132)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(255, 99, 132)'
+                }]
+            },
+            options: {
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                }
+            },
+        });
+    });
+</script>
+
         </body>
         </html>
     `;
 }
-
-function updateWebviewContent(errorLogs) {
-    // Find and update the existing webview if it's already created
-    const existingWebview = vscode.window.visibleTextEditors.find(editor =>
-        editor.document.uri.scheme === 'dashboard-stats'
-    );
-
-    if (existingWebview) {
-        existingWebview.webview.html = getWebviewContent(errorLogs);
-    }
-}
-
 
 module.exports = {
     activate,
