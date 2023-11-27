@@ -63,10 +63,10 @@ async function launchDashboard() {
         const rootPath = workspaceFolders[0].uri.fsPath;
         const dependencyGraph = await madge(rootPath).then(res => res.obj());
 
-        vscode.window.showInformationMessage(JSON.stringify(dependencyGraph, null, 2));
+        //vscode.window.showInformationMessage(JSON.stringify(dependencyGraph, null, 2));
 
         // Get the HTML content for the webview
-        const webviewContent = getWebviewContent(errorLogs, getDataFromJson(), dependencyGraph);
+        const webviewContent = getWebviewContent(errorLogs, getDataFromJson(),dependencyGraph);
 
         // Set the HTML content in the webview
         panel.webview.html = webviewContent;
@@ -79,6 +79,20 @@ async function launchDashboard() {
 function activate(context) {
     console.log('Congratulations, your extension "dashboard-stats" is now active!');
     let disposable = vscode.commands.registerCommand('dashboard-stats.launchDashboard', launchDashboard);
+}
+
+function generateDependencyGraph(dependencyData) {
+    const nodes = [];
+    const edges = [];
+
+    Object.keys(dependencyData).forEach(file => {
+        nodes.push({ id: file, label: file });
+        dependencyData[file].forEach(depFile => {
+            edges.push({ from: file, to: depFile });
+        });
+    });
+
+    return { nodes, edges };
 }
 
 
@@ -190,6 +204,7 @@ function getWebviewContent(errorLogs, data, dependencyGraph) {
 
 		</style>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
         </head>
         <body>
         <h1 class="dashboard-title">Dashboard stats plugin</h1>
@@ -215,9 +230,7 @@ function getWebviewContent(errorLogs, data, dependencyGraph) {
         
         </div>
         <div class="grid-item">Dependencies graph
-            <div class="dependencyGraph">
-                ${JSON.stringify(dependencyGraph)}
-            </div>
+		<div id="dependency-graph" style="height: 400px;"></div>
         </div>
         <div class="grid-item">Code smell detector
             <br>
@@ -227,42 +240,61 @@ function getWebviewContent(errorLogs, data, dependencyGraph) {
         </div>
 
         <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const vscode = acquireVsCodeApi(); // Acquire the vscode API for communication
+    document.addEventListener('DOMContentLoaded', function () {
+        const networkData = ${JSON.stringify(dependencyGraph)};
+        const container = document.getElementById('dependency-graph');
+        const nodes = [];
+        const edges = [];
 
-            const runTestsButton = document.getElementById('runTestsButton');
-            runTestsButton.addEventListener('click', () => {
-                console.log('Running all tests...');
-            });
+        // Extract nodes and edges from networkData
+        for (const [file, dependencies] of Object.entries(networkData)) {
+            nodes.push({ id: file, label: file });
+            for (const depFile of dependencies) {
+                edges.push({ from: file, to: depFile });
+            }
+        }
 
-            // Add the following code to create the radar chart
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: ${JSON.stringify(Object.keys(data.radarChart))},
-                    datasets: [{
-                        label: 'My First Dataset',
-                        data: ${JSON.stringify(Object.values(data.radarChart))},
-                        fill: true,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgb(255, 99, 132)',
-                        pointBackgroundColor: 'rgb(255, 99, 132)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgb(255, 99, 132)'
-                    }]
-                },
-                options: {
-                    elements: {
-                        line: {
-                            borderWidth: 3
-                        }
-                    }
-                },
-            });
+        const graphData = {
+            nodes: new vis.DataSet(nodes),
+            edges: new vis.DataSet(edges)
+        };
+
+        const graphOptions = {};
+        const network = new vis.Network(container, graphData, graphOptions);
+
+        const runTestsButton = document.getElementById('runTestsButton');
+        runTestsButton.addEventListener('click', () => {
+            console.log('Running all tests...');
         });
-        </script>
+
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ${JSON.stringify(Object.keys(data.radarChart))},
+                datasets: [{
+                    label: 'My First Dataset',
+                    data: ${JSON.stringify(Object.values(data.radarChart))},
+                    fill: true,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    pointBackgroundColor: 'rgb(255, 99, 132)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(255, 99, 132)'
+                }]
+            },
+            options: {
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                }
+            },
+        });
+    });
+</script>
+
         </body>
         </html>
     `;
