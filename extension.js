@@ -81,21 +81,6 @@ function activate(context) {
     let disposable = vscode.commands.registerCommand('dashboard-stats.launchDashboard', launchDashboard);
 }
 
-function generateDependencyGraph(dependencyData) {
-    const nodes = [];
-    const edges = [];
-
-    Object.keys(dependencyData).forEach(file => {
-        nodes.push({ id: file, label: file });
-        dependencyData[file].forEach(depFile => {
-            edges.push({ from: file, to: depFile });
-        });
-    });
-
-    return { nodes, edges };
-}
-
-
 function deactivate() {}
 
 function getDataFromJson() {
@@ -132,7 +117,8 @@ function getWebviewContent(errorLogs, data, dependencyGraph) {
 			}
 
 			.dashboard-title {
-				width: 100%;
+				text-align: center;
+				margin: 0 auto;
 				margin-bottom: 20px;
 			}
 
@@ -207,8 +193,20 @@ function getWebviewContent(errorLogs, data, dependencyGraph) {
 		<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
         </head>
         <body>
+		<div>
         <h1 class="dashboard-title">Dashboard stats plugin</h1>
+		</div>
         <br>
+		<div class="grid-item">Dependencies graph
+		<div id="dependency-graph" style="height: 240px;"></div>
+        </div>
+        <div class="grid-item">Code smell detector
+            <br>
+            <div class="heatmap-container">
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+
         <div class="grid-item">
             Test coverage visualisation
             <br>
@@ -224,20 +222,12 @@ function getWebviewContent(errorLogs, data, dependencyGraph) {
         <div class="error-logs">
         <h2>Error Logs</h2>
         <ul class="error-list">
-                    ${errorListHtml}
-                </ul>
+            ${errorListHtml}
+        </ul>
         </div>
         
         </div>
-        <div class="grid-item">Dependencies graph
-		<div id="dependency-graph" style="height: 240px;"></div>
-        </div>
-        <div class="grid-item">Code smell detector
-            <br>
-            <div class="heatmap-container">
-                <canvas id="radarChart"></canvas> <!-- Replace the heatmap div with this canvas element -->
-            </div>
-        </div>
+        
 
         <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -246,7 +236,6 @@ function getWebviewContent(errorLogs, data, dependencyGraph) {
         const nodes = [];
         const edges = [];
 
-        // Extract nodes and edges from networkData
         for (const [file, dependencies] of Object.entries(networkData)) {
             nodes.push({ id: file, label: file });
             for (const depFile of dependencies) {
@@ -273,7 +262,7 @@ function getWebviewContent(errorLogs, data, dependencyGraph) {
             data: {
                 labels: ${JSON.stringify(Object.keys(data.radarChart))},
                 datasets: [{
-                    label: 'My First Dataset',
+                    label: 'Code Smells',
                     data: ${JSON.stringify(Object.values(data.radarChart))},
                     fill: true,
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -299,18 +288,6 @@ function getWebviewContent(errorLogs, data, dependencyGraph) {
         </html>
     `;
 }
-
-function updateWebviewContent(errorLogs) {
-    // Find and update the existing webview if it's already created
-    const existingWebview = vscode.window.visibleTextEditors.find(editor =>
-        editor.document.uri.scheme === 'dashboard-stats'
-    );
-
-    if (existingWebview) {
-        existingWebview.webview.html = getWebviewContent(errorLogs);
-    }
-}
-
 
 module.exports = {
     activate,

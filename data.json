@@ -5,9 +5,10 @@
     
     },
     "radarChart": {
-      "fileA": 50,
-      "fileB": 44,
-      "fileC": 35,
-      "fileD": 45
+      "fileA": 2,
+      "fileB": 4,
+      "fileC": 5,
+      "fileD": 0,
+      "fileE": 3
     }
 }  
