@@ -225,8 +225,7 @@ function getWebviewContent(errorLogs, data, dependencyGraph) {
                 <canvas id="radarChart"></canvas> <!-- Replace the heatmap div with this canvas element -->
             </div>
         </div>
-        <div class="grid-item">To-do list</div>
-        <div class="grid-item">Customisation</div>
+
         <script>
         document.addEventListener('DOMContentLoaded', function () {
             const vscode = acquireVsCodeApi(); // Acquire the vscode API for communication
