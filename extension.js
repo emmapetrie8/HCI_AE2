@@ -230,7 +230,7 @@ function getWebviewContent(errorLogs, data, dependencyGraph) {
         
         </div>
         <div class="grid-item">Dependencies graph
-		<div id="dependency-graph" style="height: 400px;"></div>
+		<div id="dependency-graph" style="height: 240px;"></div>
         </div>
         <div class="grid-item">Code smell detector
             <br>
