@@ -11,10 +11,12 @@
   ],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "dashboard-stats.launchDashboard",
-      "title": "Launch Dashboard"
-    }]
+    "commands": [
+      {
+        "command": "dashboard-stats.launchDashboard",
+        "title": "Launch Dashboard"
+      }
+    ]
   },
   "scripts": {
     "lint": "eslint .",
@@ -32,6 +34,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "first": "^0.0.3",
     "madge": "^6.1.0"
   }
 }
